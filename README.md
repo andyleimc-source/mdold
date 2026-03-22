@@ -16,8 +16,9 @@ MCP Server for Mingdao Collaboration-era v1 API.
 | user | 13 | 用户/通讯录：查找、好友管理 |
 | company | 8 | 组织/部门：部门列表、组织查询 |
 | passport | 11 | 个人账户：用户详情、设置 |
+| task | 7 | 任务：创建、删除、更新状态/名称/截止日期（部分存活） |
 
-共计 **101 个工具**，覆盖 8 个模块。
+共计 **108 个工具**，覆盖 9 个模块。
 
 ## 快速开始
 
@@ -69,7 +70,7 @@ Token 会保存在 `.secrets.json` 中（已在 .gitignore 中排除）。
 
 ### 5. 在 Claude Code 中使用
 
-在你的项目目录创建 `.mcp.json`：
+在你的 `~/.claude/.mcp.json`（全局）或项目目录的 `.mcp.json` 中添加：
 
 ```json
 {
@@ -77,7 +78,10 @@ Token 会保存在 `.secrets.json` 中（已在 .gitignore 中排除）。
     "mingdao": {
       "command": "python3",
       "args": ["-m", "mingdao_collab_mcp.server"],
-      "cwd": "/path/to/mingdao-collab-mcp"
+      "cwd": "/path/to/mingdao-collab-mcp",
+      "env": {
+        "PYTHONPATH": "/path/to/mingdao-collab-mcp/src"
+      }
     }
   }
 }
@@ -134,7 +138,8 @@ mingdao-collab-mcp/
     ├── tools_group.py     # 群组（18 个工具）
     ├── tools_user.py      # 用户（13 个工具）
     ├── tools_company.py   # 组织（8 个工具）
-    └── tools_passport.py  # 个人账户（11 个工具）
+    ├── tools_passport.py  # 个人账户（11 个工具）
+    └── tools_task.py      # 任务（7 个工具，部分存活）
 ```
 
 ## API 文档

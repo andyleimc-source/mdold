@@ -8,13 +8,14 @@ from mcp.server.fastmcp import FastMCP
 
 from . import tools_post, tools_calendar, tools_webchat, tools_message
 from . import tools_group, tools_user, tools_company, tools_passport
+from . import tools_task
 
 mcp = FastMCP(
     "mingdao-collab",
     instructions=(
         "明道协作时代 v1 API 工具集。"
         "覆盖动态(post)、日程(calendar)、私信(webchat)、收件箱(message)、"
-        "群组(group)、用户(user)、组织(company)、个人账户(passport) 八个模块。"
+        "群组(group)、用户(user)、组织(company)、个人账户(passport)、任务(task) 九个模块。"
         "所有工具需要有效的 access_token，启动前请确保 .env 和 .secrets.json 已配置。"
     ),
 )
@@ -28,6 +29,7 @@ tools_group.register(mcp)
 tools_user.register(mcp)
 tools_company.register(mcp)
 tools_passport.register(mcp)
+tools_task.register(mcp)
 
 
 def main() -> None:
