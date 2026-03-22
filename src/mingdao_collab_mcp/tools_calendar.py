@@ -1,23 +1,136 @@
-"""日程 (Calendar) module — 20 tools.
+"""日程 (Calendar) module — 21 tools.
 
 NOTE: The /v1/calendar/get_events_by_conditions endpoint is broken on the
-server side (returns "请求异常" regardless of parameters).  As a workaround
-we expose calendar_search (keyword search) which works reliably for listing
-events.  The original get_events_by_conditions tool has been removed.
-The /v1/calendar/get_conflicted_events endpoint is also broken ("获取日程失败")
-and has been removed.
+server side (returns "请求异常" regardless of parameters).  As a workaround,
+calendar_get_events fetches the iCal subscription feed via
+get_calendar_subscription_url and parses it client-side.
+The /v1/calendar/get_conflicted_events endpoint is also broken and removed.
 """
 
 from __future__ import annotations
+
+import json
+import re
+import urllib.request
+from datetime import datetime, timedelta, timezone
 
 from mcp.server.fastmcp import FastMCP
 
 from .api_client import api_get, api_post
 
+_CST = timezone(timedelta(hours=8))
+
+
+def _parse_ical_events(ical_text: str,
+                       start_filter: str | None = None,
+                       end_filter: str | None = None) -> list[dict]:
+    """Parse VEVENT blocks from iCal text and optionally filter by date range.
+
+    Parameters
+    ----------
+    ical_text : raw iCal text
+    start_filter : inclusive lower bound, YYYY-MM-DD (CST)
+    end_filter : inclusive upper bound, YYYY-MM-DD (CST)
+    """
+    if start_filter:
+        filter_start = datetime.strptime(start_filter, "%Y-%m-%d").replace(tzinfo=_CST)
+    else:
+        filter_start = None
+    if end_filter:
+        # end of that day
+        filter_end = datetime.strptime(end_filter, "%Y-%m-%d").replace(
+            hour=23, minute=59, second=59, tzinfo=_CST)
+    else:
+        filter_end = None
+
+    def _get(block: str, name: str) -> str:
+        # Handle folded lines and parameters (e.g. DTSTART;TZID=...)
+        m = re.search(rf'^{name}[;:](.*)$', block, re.MULTILINE)
+        return m.group(1).strip() if m else ""
+
+    def _parse_dt(raw: str) -> datetime | None:
+        s = raw.replace("Z", "")
+        try:
+            if "T" in s:
+                dt = datetime.strptime(s, "%Y%m%dT%H%M%S")
+                if raw.endswith("Z"):
+                    dt = dt.replace(tzinfo=timezone.utc).astimezone(_CST)
+                else:
+                    dt = dt.replace(tzinfo=_CST)
+            else:
+                dt = datetime.strptime(s, "%Y%m%d").replace(tzinfo=_CST)
+            return dt
+        except ValueError:
+            return None
+
+    results: list[dict] = []
+    for m in re.finditer(r"BEGIN:VEVENT(.*?)END:VEVENT", ical_text, re.DOTALL):
+        block = m.group(1)
+        dt_start = _parse_dt(_get(block, "DTSTART"))
+        if dt_start is None:
+            continue
+
+        # Apply date filter
+        if filter_start and dt_start < filter_start:
+            continue
+        if filter_end and dt_start > filter_end:
+            continue
+
+        dt_end = _parse_dt(_get(block, "DTEND"))
+        summary = _get(block, "SUMMARY")
+        description = _get(block, "DESCRIPTION")
+        location = _get(block, "LOCATION")
+        uid = _get(block, "UID")
+        organizer = _get(block, "ORGANIZER")
+        # Clean up organizer MAILTO:
+        if "MAILTO:" in organizer:
+            organizer = organizer.split("MAILTO:")[-1]
+
+        results.append({
+            "event_id": uid,
+            "summary": summary,
+            "start_time": dt_start.strftime("%Y-%m-%d %H:%M"),
+            "end_time": dt_end.strftime("%Y-%m-%d %H:%M") if dt_end else "",
+            "location": location,
+            "description": description[:500] if description else "",
+            "organizer": organizer,
+        })
+
+    results.sort(key=lambda e: e["start_time"])
+    return results
+
 
 def register(mcp: FastMCP) -> None:
 
     # ── GET ──────────────────────────────────────────────
+
+    @mcp.tool()
+    def calendar_get_events(
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> dict:
+        """获取日程列表。通过日历订阅接口拉取 iCal 数据并解析。
+
+        日期格式 YYYY-MM-DD，用于过滤日程范围（北京时间）。
+        不传日期则返回所有日程。
+        """
+        # Step 1: get subscription URL
+        resp = api_get("/v1/calendar/get_calendar_subscription_url")
+        if not resp.get("success"):
+            return resp
+        sub_url = resp.get("data", {}).get("subscription_url", "")
+        if not sub_url:
+            return {"success": False, "error_msg": "无法获取日历订阅地址"}
+
+        # Step 2: fetch iCal feed
+        req = urllib.request.Request(sub_url, method="GET",
+                                     headers={"User-Agent": "mingdao-collab-mcp/0.1"})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            ical_text = r.read().decode("utf-8")
+
+        # Step 3: parse & filter
+        events = _parse_ical_events(ical_text, start_date, end_date)
+        return {"data": events, "count": len(events), "success": True, "error_code": 1}
 
     @mcp.tool()
     def calendar_get_event_details(event_id: str) -> dict:
