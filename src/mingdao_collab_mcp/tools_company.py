@@ -51,4 +51,4 @@ def register(mcp: FastMCP) -> None:
     @mcp.tool()
     def company_refuse_invitation(project_id: str) -> dict:
         """拒绝组织邀请。"""
-        return api_post("/v1/company/refuse_Project_invitation", project_id=project_id)
+        return api_post("/v1/company/refuse_project_invitation", project_id=project_id)

@@ -9,7 +9,7 @@ MCP Server for Mingdao Collaboration-era v1 API.
 | 模块 | 工具数 | 说明 |
 |------|--------|------|
 | post | 18 | 动态：发布、评论、点赞、收藏、查询 |
-| calendar | 22 | 日程：创建、编辑、邀请、查询 |
+| calendar | 20 | 日程：创建、编辑、邀请、搜索（注：get_events_by_conditions 和 get_conflicted_events 端点因服务端故障已移除） |
 | webchat | 8 | 私信/聊天：消息收发、聊天列表 |
 | message | 3 | 收件箱：系统消息、动态消息 |
 | group | 18 | 群组：创建、管理、成员操作 |
@@ -18,7 +18,7 @@ MCP Server for Mingdao Collaboration-era v1 API.
 | passport | 11 | 个人账户：用户详情、设置 |
 | task | 7 | 任务：创建、删除、更新状态/名称/截止日期（部分存活） |
 
-共计 **108 个工具**，覆盖 9 个模块。
+共计 **106 个工具**，覆盖 9 个模块。
 
 ## 快速开始
 
@@ -132,7 +132,7 @@ mingdao-collab-mcp/
     ├── auth.py            # OAuth token 管理
     ├── api_client.py      # HTTP 请求封装
     ├── tools_post.py      # 动态（18 个工具）
-    ├── tools_calendar.py  # 日程（22 个工具）
+    ├── tools_calendar.py  # 日程（20 个工具）
     ├── tools_webchat.py   # 私信（8 个工具）
     ├── tools_message.py   # 收件箱（3 个工具）
     ├── tools_group.py     # 群组（18 个工具）

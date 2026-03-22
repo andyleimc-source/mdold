@@ -1,4 +1,12 @@
-"""日程 (Calendar) module — 21 tools."""
+"""日程 (Calendar) module — 20 tools.
+
+NOTE: The /v1/calendar/get_events_by_conditions endpoint is broken on the
+server side (returns "请求异常" regardless of parameters).  As a workaround
+we expose calendar_search (keyword search) which works reliably for listing
+events.  The original get_events_by_conditions tool has been removed.
+The /v1/calendar/get_conflicted_events endpoint is also broken ("获取日程失败")
+and has been removed.
+"""
 
 from __future__ import annotations
 
@@ -12,34 +20,14 @@ def register(mcp: FastMCP) -> None:
     # ── GET ──────────────────────────────────────────────
 
     @mcp.tool()
-    def calendar_get_events(
-        start_date: str | None = None,
-        end_date: str | None = None,
-        is_private: int | None = None,
-        category_id: str | None = None,
-        member_id: str | None = None,
-    ) -> dict:
-        """按条件获取日程列表。日期格式 YYYY-MM-DD。"""
-        return api_get("/v1/calendar/get_events_by_conditions",
-                       start_date=start_date, end_date=end_date,
-                       is_private=is_private, category_id=category_id,
-                       member_id=member_id)
-
-    @mcp.tool()
     def calendar_get_event_details(event_id: str) -> dict:
         """获取单个日程的详细信息。"""
-        return api_get("/v1/calendar/get_event_details", Event_id=event_id)
+        return api_get("/v1/calendar/get_event_details", event_id=event_id)
 
     @mcp.tool()
     def calendar_get_unconfirmed_events() -> dict:
         """获取当前用户未确认的日程邀请。"""
         return api_get("/v1/calendar/get_unconfirmed_events")
-
-    @mcp.tool()
-    def calendar_get_conflicted_events(start_date: str | None = None, end_date: str | None = None) -> dict:
-        """获取时间冲突的日程。"""
-        return api_get("/v1/calendar/get_conflicted_events",
-                       start_date=start_date, end_date=end_date)
 
     @mcp.tool()
     def calendar_get_categories() -> dict:
@@ -53,7 +41,7 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool()
     def calendar_search(keywords: str) -> dict:
-        """按关键词搜索日程。"""
+        """按关键词搜索日程。可用于查找特定主题的日程。"""
         return api_get("/v1/calendar/search_events_by_keyword", keywords=keywords)
 
     # ── POST ─────────────────────────────────────────────
@@ -90,29 +78,29 @@ def register(mcp: FastMCP) -> None:
     def calendar_add_members(event_id: str, member_ids: str) -> dict:
         """给日程添加成员。member_ids 用逗号分隔。"""
         return api_post("/v1/calendar/add_members_to_event",
-                        Event_id=event_id, member_ids=member_ids)
+                        event_id=event_id, member_ids=member_ids)
 
     @mcp.tool()
     def calendar_confirm_invitation(event_id: str) -> dict:
         """确认日程邀请。"""
-        return api_post("/v1/calendar/confirm_event_invitation", Event_id=event_id)
+        return api_post("/v1/calendar/confirm_event_invitation", event_id=event_id)
 
     @mcp.tool()
     def calendar_reject_invitation(event_id: str) -> dict:
         """拒绝日程邀请。"""
-        return api_post("/v1/calendar/reject_event_invitation", Event_id=event_id)
+        return api_post("/v1/calendar/reject_event_invitation", event_id=event_id)
 
     @mcp.tool()
     def calendar_reinvite_member(event_id: str, member_id: str) -> dict:
         """重新邀请某成员加入日程。"""
         return api_post("/v1/calendar/reinvite_a_member_to_event",
-                        Event_id=event_id, member_id=member_id)
+                        event_id=event_id, member_id=member_id)
 
     @mcp.tool()
     def calendar_remove_member(event_id: str, member_id: str) -> dict:
         """从日程中移除某成员。"""
         return api_post("/v1/calendar/remove_a_member_on_event",
-                        Event_id=event_id, member_id=member_id)
+                        event_id=event_id, member_id=member_id)
 
     @mcp.tool()
     def calendar_edit_event(
@@ -125,7 +113,7 @@ def register(mcp: FastMCP) -> None:
     ) -> dict:
         """修改日程的基本属性（名称、时间、地点、描述）。"""
         return api_post("/v1/calendar/edit_common_properties_on_event",
-                        Event_id=event_id, name=name,
+                        event_id=event_id, name=name,
                         start_date=start_date, end_date=end_date,
                         address=address, description=description)
 
@@ -133,19 +121,19 @@ def register(mcp: FastMCP) -> None:
     def calendar_edit_category(event_id: str, category_id: str) -> dict:
         """修改日程的分类。"""
         return api_post("/v1/calendar/edit_category_of_an_event",
-                        Event_id=event_id, category_id=category_id)
+                        event_id=event_id, category_id=category_id)
 
     @mcp.tool()
     def calendar_edit_share(event_id: str, is_share: int) -> dict:
         """修改日程的分享属性。is_share: 1=分享, 0=不分享。"""
         return api_post("/v1/calendar/edit_share_property_on_event",
-                        Event_id=event_id, is_share=is_share)
+                        event_id=event_id, is_share=is_share)
 
     @mcp.tool()
     def calendar_edit_private(event_id: str, is_private: int) -> dict:
         """修改日程的私密属性。is_private: 1=私密, 0=公开。"""
         return api_post("/v1/calendar/edit_is_private_property_on_event",
-                        Event_id=event_id, is_private=is_private)
+                        event_id=event_id, is_private=is_private)
 
     @mcp.tool()
     def calendar_edit_category_props(category_id: str, name: str | None = None, color: str | None = None) -> dict:
@@ -157,12 +145,12 @@ def register(mcp: FastMCP) -> None:
     def calendar_edit_reminder(event_id: str, remind_time: int | None = None, remind_type: int | None = None) -> dict:
         """修改日程的提醒设置。"""
         return api_post("/v1/calendar/edit_reminder_on_event",
-                        Event_id=event_id, remind_time=remind_time, remind_type=remind_type)
+                        event_id=event_id, remind_time=remind_time, remind_type=remind_type)
 
     @mcp.tool()
     def calendar_remove_event(event_id: str) -> dict:
         """删除日程。"""
-        return api_post("/v1/calendar/remove_event", Event_id=event_id)
+        return api_post("/v1/calendar/remove_event", event_id=event_id)
 
     @mcp.tool()
     def calendar_remove_category(category_id: str) -> dict:
