@@ -26,18 +26,23 @@ def register(mcp: FastMCP) -> None:
     @mcp.tool()
     def task_add(
         task_name: str,
-        des: str | None = None,
-        charge_account_id: str | None = None,
+        task_description: str | None = None,
+        charge_user_account_id: str | None = None,
+        members: str | None = None,
         folder_id: str | None = None,
-        dead_line: str | None = None,
-        color: int | None = None,
+        folder_stage_id: str | None = None,
+        deadline: str | None = None,
+        parent_id: str | None = None,
+        is_star: bool | None = None,
+        project_id: str | None = None,
     ) -> dict:
-        """创建一个新任务。task_name 为任务名称，可指定负责人(charge_account_id)、文件夹(folder_id)、截止日期(dead_line, 格式 YYYY-MM-DD)。"""
+        """创建任务。deadline 格式 YYYY-MM-DD。members 逗号分隔。folder_id 填了则 folder_stage_id 必填。"""
         return api_post("/v1/task/add_task",
-                        task_name=task_name, des=des,
-                        charge_account_id=charge_account_id,
-                        folder_id=folder_id, dead_line=dead_line,
-                        color=color)
+                        task_name=task_name, task_description=task_description,
+                        charge_user_account_id=charge_user_account_id,
+                        members=members, folder_id=folder_id,
+                        folder_stage_id=folder_stage_id, deadline=deadline,
+                        parent_id=parent_id, is_star=is_star, project_id=project_id)
 
     @mcp.tool()
     def task_delete(task_id: str) -> dict:
@@ -51,17 +56,18 @@ def register(mcp: FastMCP) -> None:
                         task_id=task_id, status=status)
 
     @mcp.tool()
-    def task_update_stage(task_id: str, folder_id: str, stage_id: str | None = None) -> dict:
-        """更新任务所属阶段。需要 folder_id（任务文件夹ID）。"""
+    def task_update_stage(task_id: str, folder_id: str, folder_stage_id: str) -> dict:
+        """更新任务所属阶段。folder_id 和 folder_stage_id 均必填。"""
         return api_post("/v1/task/update_task_stage",
                         task_id=task_id, folder_id=folder_id,
-                        stage_id=stage_id)
+                        folder_stage_id=folder_stage_id)
 
     @mcp.tool()
-    def task_update_deadline(task_id: str, dead_line: str) -> dict:
-        """修改任务截止日期。格式 YYYY-MM-DD。"""
+    def task_update_deadline(task_id: str, deadline: str, include_sub_tasks: bool = False) -> dict:
+        """修改任务截止日期。格式 YYYY-MM-DD。include_sub_tasks: 是否同步修改子任务。"""
         return api_post("/v1/task/update_task_deadline",
-                        task_id=task_id, dead_line=dead_line)
+                        task_id=task_id, deadline=deadline,
+                        include_sub_tasks=include_sub_tasks)
 
     @mcp.tool()
     def task_update_name(task_id: str, task_name: str) -> dict:

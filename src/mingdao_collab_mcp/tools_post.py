@@ -77,19 +77,19 @@ def register(mcp: FastMCP) -> None:
     @mcp.tool()
     def post_add_post(
         post_msg: str,
-        group_id: str | None = None,
-        category_id: str | None = None,
-        scope: int | None = None,
+        post_type: int = 0,
+        group_ids: str | None = None,
+        project_ids: str | None = None,
     ) -> dict:
-        """发布一条新动态。post_msg 为动态内容，可指定群组和分类。"""
+        """发布一条新动态。post_type: 0=普通,1=链接,2=图片,3=文档,4=提问,7=投票。group_ids/project_ids 逗号分隔。"""
         return api_post("/v1/post/add_post",
-                        post_msg=post_msg, group_id=group_id,
-                        category_id=category_id, scope=scope)
+                        post_msg=post_msg, post_type=post_type,
+                        group_ids=group_ids, project_ids=project_ids)
 
     @mcp.tool()
-    def post_add_post_reply(post_id: str, reply_msg: str) -> dict:
-        """给指定动态添加评论。"""
-        return api_post("/v1/post/add_post_reply", post_id=post_id, reply_msg=reply_msg)
+    def post_add_post_reply(post_id: str, reply_msg: str, reply_id: str | None = None) -> dict:
+        """给指定动态添加评论。reply_id 为回复某条评论时填写。"""
+        return api_post("/v1/post/add_post_reply", post_id=post_id, reply_msg=reply_msg, reply_id=reply_id)
 
     @mcp.tool()
     def post_delete_post(post_id: str) -> dict:
@@ -97,26 +97,26 @@ def register(mcp: FastMCP) -> None:
         return api_post("/v1/post/delete_post", post_id=post_id)
 
     @mcp.tool()
-    def post_delete_post_reply(reply_id: str) -> dict:
-        """删除一条动态评论。"""
-        return api_post("/v1/post/delete_post_reply", reply_id=reply_id)
+    def post_delete_post_reply(post_id: str, reply_id: str | None = None) -> dict:
+        """删除一条动态评论。post_id 必填，reply_id 为要删除的评论ID。"""
+        return api_post("/v1/post/delete_post_reply", post_id=post_id, reply_id=reply_id)
 
     @mcp.tool()
-    def post_like(post_id: str) -> dict:
-        """点赞或取消点赞一条动态。"""
-        return api_post("/v1/post/update_like_or_cancel_like_post", post_id=post_id)
+    def post_like(post_id: str, is_like: bool = True) -> dict:
+        """点赞或取消点赞一条动态。is_like: True=点赞, False=取消。"""
+        return api_post("/v1/post/update_like_or_cancel_like_post", post_id=post_id, is_like=is_like)
 
     @mcp.tool()
-    def post_collect(post_id: str) -> dict:
-        """收藏或取消收藏一条动态。"""
-        return api_post("/v1/post/update_collect_or_cancel_collect_post", post_id=post_id)
+    def post_collect(post_id: str, is_collect: bool = True) -> dict:
+        """收藏或取消收藏一条动态。is_collect: True=收藏, False=取消。"""
+        return api_post("/v1/post/update_collect_or_cancel_collect_post", post_id=post_id, is_collect=is_collect)
 
     @mcp.tool()
-    def post_top(post_id: str) -> dict:
-        """置顶一条动态。"""
-        return api_post("/v1/post/top_post", post_id=post_id)
+    def post_top(post_id: str, hour: int | None = None) -> dict:
+        """置顶一条动态（仅网络管理员）。hour 为置顶时长（小时），不填则不限时长。"""
+        return api_post("/v1/post/top_post", post_id=post_id, hour=hour)
 
     @mcp.tool()
-    def post_vote(post_id: str, option_index: int) -> dict:
-        """对动态中的投票进行投票。option_index 为选项序号。"""
-        return api_post("/v1/post/add_cast_options", post_id=post_id, option_index=option_index)
+    def post_vote(post_id: str, options: str) -> dict:
+        """对投票动态投票。options 格式如 '1|3' 表示选第1和第3项。"""
+        return api_post("/v1/post/add_cast_options", post_id=post_id, options=options)

@@ -28,9 +28,9 @@ def register(mcp: FastMCP) -> None:
         return api_get("/v1/user/get_mentioned_users", keywords=keywords)
 
     @mcp.tool()
-    def user_get_by_phone(phone: str) -> dict:
-        """根据手机号查找用户。"""
-        return api_get("/v1/user/get_account_byphone", phone=phone)
+    def user_get_by_phone(identifier: str) -> dict:
+        """根据手机号或邮箱查找用户。"""
+        return api_get("/v1/user/get_account_byphone", identifier=identifier)
 
     @mcp.tool()
     def user_get_address_recommend() -> dict:
@@ -60,9 +60,9 @@ def register(mcp: FastMCP) -> None:
         return api_post("/v1/user/add_friend", account_id=account_id)
 
     @mcp.tool()
-    def user_add_mobile_address(phones: str) -> dict:
-        """通过手机号批量添加通讯录。phones 用逗号分隔。"""
-        return api_post("/v1/user/add_mobile_address", phones=phones)
+    def user_add_mobile_address(mobiles: str) -> dict:
+        """通过手机号批量添加通讯录。mobiles 格式如 [13000000000,13000000001]。"""
+        return api_post("/v1/user/add_mobile_address", mobiles=mobiles)
 
     @mcp.tool()
     def user_remove_friend(account_id: str) -> dict:

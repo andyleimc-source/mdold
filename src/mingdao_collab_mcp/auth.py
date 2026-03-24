@@ -14,14 +14,19 @@ BASE_API_URL = "https://api.mingdao.com"
 
 
 def _find_project_root() -> Path:
-    """Walk up from cwd to find .env or .secrets.json, fallback to cwd."""
+    """Walk up from cwd to find .env or .secrets.json, fallback to package dir."""
+    # First try: directory containing this source file (works regardless of cwd)
+    pkg_dir = Path(__file__).resolve().parent.parent.parent
+    if (pkg_dir / ".env").exists() or (pkg_dir / ".secrets.json").exists():
+        return pkg_dir
+    # Second try: walk up from cwd
     cwd = Path.cwd()
     for d in [cwd, *cwd.parents]:
         if (d / ".env").exists() or (d / ".secrets.json").exists():
             return d
         if d == d.parent:
             break
-    return cwd
+    return pkg_dir
 
 
 ROOT = _find_project_root()

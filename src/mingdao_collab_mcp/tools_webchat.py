@@ -20,34 +20,42 @@ def register(mcp: FastMCP) -> None:
         return api_get("/v1/webchat/get_chat_un_read_count")
 
     @mcp.tool()
-    def webchat_get_messages(id: str, type: int = 1, pagesize: int = 20) -> dict:
-        """获取与某人或某群的消息记录。type: 1=个人, 2=群组。id 为 account_id 或 group_id。"""
+    def webchat_get_messages(account_id: str | None = None, group_id: str | None = None,
+                              pageindex: int = 1, pagesize: int = 20,
+                              keyword: str | None = None) -> dict:
+        """获取与某人或某群的消息记录。account_id 和 group_id 二选一。"""
         return api_get("/v1/webchat/get_user_or_group_message",
-                       id=id, type=type, pagesize=pagesize)
+                       account_id=account_id, group_id=group_id,
+                       pageindex=pageindex, pagesize=pagesize, keyword=keyword)
 
     @mcp.tool()
-    def webchat_get_message_by_id(message_id: str) -> dict:
-        """根据消息ID获取特定消息。"""
-        return api_get("/v1/webchat/get_user_or_group_message_by_id", message_id=message_id)
+    def webchat_get_message_by_id(message_id: str, account_id: str | None = None,
+                                   group_id: str | None = None, size: int | None = None) -> dict:
+        """根据消息ID获取前后消息。account_id 和 group_id 二选一。"""
+        return api_get("/v1/webchat/get_user_or_group_message_by_id",
+                       message_id=message_id, account_id=account_id,
+                       group_id=group_id, size=size)
 
     @mcp.tool()
-    def webchat_get_message_count(id: str | None = None, type: int | None = None) -> dict:
-        """获取消息数量。"""
-        return api_get("/v1/webchat/get_user_or_group_message_count", id=id, type=type)
+    def webchat_get_message_count(account_id: str | None = None, group_id: str | None = None) -> dict:
+        """获取与某人或某群的消息总数。account_id 和 group_id 二选一。"""
+        return api_get("/v1/webchat/get_user_or_group_message_count",
+                       account_id=account_id, group_id=group_id)
 
     @mcp.tool()
-    def webchat_send_message(to_account_id: str, message: str, type: int = 1) -> dict:
-        """发送消息卡片。to_account_id 为接收者ID，type: 1=个人, 2=群组。"""
-        return api_post("/v1/webchat/send_message_card",
-                        to_account_id=to_account_id, message=message, type=type)
+    def webchat_send_message(message: str, account_id: str | None = None, group_id: str | None = None) -> dict:
+        """给用户或群组发送文本消息。account_id 和 group_id 二选一。"""
+        return api_post("/v1/webchat/send_message",
+                        account_id=account_id, group_id=group_id, message=message)
 
     @mcp.tool()
-    def webchat_delete_history(id: str) -> dict:
-        """删除一条聊天记录。"""
-        return api_post("/v1/webchat/delete_chat_history_item", id=id)
+    def webchat_delete_history(account_id: str | None = None, group_id: str | None = None) -> dict:
+        """删除聊天记录。account_id 和 group_id 二选一。"""
+        return api_post("/v1/webchat/delete_chat_history_item",
+                        account_id=account_id, group_id=group_id)
 
     @mcp.tool()
-    def webchat_set_push(group_id: str | None = None, is_push: int | None = None) -> dict:
-        """设置消息推送开关。"""
+    def webchat_set_push(is_push: bool, choose_type: bool = True, group_id: str | None = None) -> dict:
+        """设置消息推送开关。choose_type: True=单个群组, False=全部群组。"""
         return api_post("/v1/webchat/set_single_or_all_group_push",
-                        group_id=group_id, is_push=is_push)
+                        is_push=is_push, choose_type=choose_type, group_id=group_id)
