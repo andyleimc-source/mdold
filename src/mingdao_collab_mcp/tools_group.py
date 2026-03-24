@@ -55,14 +55,14 @@ def register(mcp: FastMCP) -> None:
 
     @mcp.tool()
     def group_create(
-        name: str,
+        group_name: str,
         about: str | None = None,
         is_approval: int | None = None,
         project_id: str | None = None,
     ) -> dict:
-        """创建一个新群组。"""
+        """创建一个新群组。group_name 为群组名称。"""
         return api_post("/v1/group/create_group",
-                        name=name, about=about, is_approval=is_approval,
+                        group_name=group_name, about=about, is_approval=is_approval,
                         project_id=project_id)
 
     @mcp.tool()
