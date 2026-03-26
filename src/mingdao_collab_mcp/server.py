@@ -36,7 +36,7 @@ def main() -> None:
     if len(sys.argv) > 1 and sys.argv[1] == "exchange-code":
         from .auth import exchange_code, get_env_config
         if len(sys.argv) < 3:
-            print("Usage: mingdao-collab-mcp exchange-code <code>")
+            print("Usage: mdold exchange-code <code>")
             sys.exit(1)
         config = get_env_config()
         result = exchange_code(

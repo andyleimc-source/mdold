@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mingdao-collab-mcp"
+name = "mdold"
 version = "0.1.0"
 description = "MCP Server for Mingdao Collaboration-era v1 API"
 readme = "README.md"
@@ -14,4 +14,4 @@ dependencies = [
 ]
 
 [project.scripts]
-mingdao-collab-mcp = "mingdao_collab_mcp.server:main"
+mdold = "mingdao_collab_mcp.server:main"

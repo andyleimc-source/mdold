@@ -3,7 +3,7 @@
 全接口验证脚本 — 验证明道 MCP Server 所有模块的增删改查。
 
 运行方式：
-    cd /Users/andy/Desktop/project/mingdao-collab-mcp
+    cd /Users/andy/Desktop/project/mcp/mdold
     PYTHONPATH=src .venv/bin/python3 scripts/verify_all_apis.py
 
 结果写入 VERIFICATION_REPORT.md

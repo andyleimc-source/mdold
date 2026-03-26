@@ -124,7 +124,7 @@ def register(mcp: FastMCP) -> None:
 
         # Step 2: fetch iCal feed
         req = urllib.request.Request(sub_url, method="GET",
-                                     headers={"User-Agent": "mingdao-collab-mcp/0.1"})
+                                     headers={"User-Agent": "mdold/0.1"})
         with urllib.request.urlopen(req, timeout=60) as r:
             ical_text = r.read().decode("utf-8")
 

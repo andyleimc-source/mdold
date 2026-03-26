@@ -69,7 +69,7 @@ def _http_get(url: str, params: dict[str, Any]) -> dict[str, Any]:
     req_url = f"{url}?{query}" if query else url
     req = urllib.request.Request(
         req_url,
-        headers={"Accept": "application/json", "User-Agent": "mingdao-collab-mcp/0.1"},
+        headers={"Accept": "application/json", "User-Agent": "mdold/0.1"},
         method="GET",
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
@@ -165,7 +165,7 @@ def ensure_access_token() -> str:
         raise RuntimeError(
             "Token expired and cannot be refreshed. Re-authorize in browser:\n"
             f"{url}\n"
-            "Then run: mingdao-collab-mcp exchange-code <code>"
+            "Then run: mdold exchange-code <code>"
         )
 
     raise RuntimeError("Missing app_key / redirect_uri. Check .env or .secrets.json.")

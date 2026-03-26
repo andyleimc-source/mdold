@@ -19,7 +19,7 @@ def _get(endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
     url = f"{BASE_API_URL}{endpoint}?{query}"
     req = urllib.request.Request(
         url,
-        headers={"Accept": "application/json", "User-Agent": "mingdao-collab-mcp/0.1"},
+        headers={"Accept": "application/json", "User-Agent": "mdold/0.1"},
         method="GET",
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
@@ -39,7 +39,7 @@ def _post(endpoint: str, data: dict[str, Any] | None = None) -> dict[str, Any]:
         headers={
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
-            "User-Agent": "mingdao-collab-mcp/0.1",
+            "User-Agent": "mdold/0.1",
         },
         method="POST",
     )

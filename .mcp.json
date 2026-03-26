@@ -1,11 +1,11 @@
 {
   "mcpServers": {
-    "mdc-mcp": {
+    "mdold": {
       "command": "python3",
       "args": ["-m", "mingdao_collab_mcp.server"],
-      "cwd": "/path/to/mingdao-collab-mcp",
+      "cwd": "/path/to/mdold",
       "env": {
-        "PYTHONPATH": "/path/to/mingdao-collab-mcp/src"
+        "PYTHONPATH": "/path/to/mdold/src"
       }
     }
   }
