@@ -25,16 +25,15 @@ MCP Server for Mingdao Collaboration-era v1 API.
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/andyleimc-source/mingdao-collab-mcp.git
-cd mingdao-collab-mcp
+git clone https://github.com/andyleimc-source/mdold.git
+cd mdold
 ```
 
-### 2. 安装依赖
+### 2. 安装依赖（用虚拟环境，避免污染系统 Python）
 
 ```bash
-pip install -e .
-# 或者
-pip install "mcp[cli]"
+python3 -m venv .venv
+.venv/bin/pip install -e .
 ```
 
 ### 3. 配置凭证
@@ -48,46 +47,48 @@ cp .env.example .env
 ```env
 MINGDAO_APP_KEY=你的app_key
 MINGDAO_APP_SECRET=你的app_secret
-MINGDAO_REDIRECT_URI=你的回调地址
+MINGDAO_REDIRECT_URI=http://localhost:8080/callback
 ```
 
-> 在哪里获取？登录 https://open.mingdao.com ，创建一个应用，在应用设置中获取 app_key 和 app_secret。回调地址需与应用中配置的完全一致。
+> 在哪里获取？登录 https://open.mingdao.com ，创建一个应用，在应用设置中获取 app_key 和 app_secret。回调地址必须与应用中配置的完全一致（包括端口号）。
 
 ### 4. 首次授权
 
 ```bash
 # 生成授权链接
-python -m mingdao_collab_mcp.server authorize-url
+PYTHONPATH=src .venv/bin/python3 -m mingdao_collab_mcp.server authorize-url
 
-# 在浏览器中打开链接，登录明道账号并授权
-# 授权后浏览器会跳转到回调地址，从 URL 中复制 code 参数
+# 在浏览器中打开输出的链接，登录明道账号并授权
+# 授权后浏览器会跳转到回调地址，从 URL 中复制 code 参数值
 
 # 用 code 换取 token
-python -m mingdao_collab_mcp.server exchange-code 你拿到的code
+PYTHONPATH=src .venv/bin/python3 -m mingdao_collab_mcp.server exchange-code 你拿到的code
 ```
 
 Token 会保存在 `.secrets.json` 中（已在 .gitignore 中排除）。
 
 ### 5. 在 Claude Code 中使用
 
-在你的 `~/.claude/.mcp.json`（全局）或项目目录的 `.mcp.json` 中添加：
+编辑 `~/.claude.json`，在 `mcpServers` 中添加：
 
 ```json
-{
-  "mcpServers": {
-    "mingdao": {
-      "command": "python3",
-      "args": ["-m", "mingdao_collab_mcp.server"],
-      "cwd": "/path/to/mingdao-collab-mcp",
-      "env": {
-        "PYTHONPATH": "/path/to/mingdao-collab-mcp/src"
-      }
-    }
+"mdc": {
+  "type": "stdio",
+  "command": "/absolute/path/to/mdold/.venv/bin/python3",
+  "args": ["-m", "mingdao_collab_mcp.server", "mingdao"],
+  "env": {
+    "MINGDAO_APP_KEY": "你的app_key",
+    "MINGDAO_APP_SECRET": "你的app_secret",
+    "MINGDAO_REDIRECT_URI": "http://localhost:8080/callback",
+    "MINGDAO_ACCESS_TOKEN": "",
+    "PYTHONPATH": "/absolute/path/to/mdold/src"
   }
 }
 ```
 
-然后打开 Claude Code，就可以直接用自然语言操作明道了：
+> 将 `/absolute/path/to/mdold` 替换为你的实际目录（用 `pwd` 查看）。`MINGDAO_ACCESS_TOKEN` 留空即可，MCP Server 启动时会自动从 `.secrets.json` 读取并刷新。
+
+重启 Claude Code，就可以直接用自然语言操作明道了：
 
 - "帮我看看张三最近发了什么动态"
 - "创建一个明天上午 10 点的日程，邀请李四"
@@ -104,13 +105,6 @@ Token 会保存在 `.secrets.json` 中（已在 .gitignore 中排除）。
 
 如果超过 14 天没有使用，两个 token 都会过期，需要重新走一次浏览器授权流程（步骤 4）。
 
-**建议：** 设置一个每周自动运行的定时任务来保持 token 活跃：
-
-```bash
-# crontab -e
-0 9 * * 1 cd /path/to/mingdao-collab-mcp && python3 -c "from src.mingdao_collab_mcp.auth import ensure_access_token; ensure_access_token()"
-```
-
 ## 安全提醒
 
 - `.env` 和 `.secrets.json` 包含敏感凭证，**绝不要**提交到 git
@@ -120,7 +114,7 @@ Token 会保存在 `.secrets.json` 中（已在 .gitignore 中排除）。
 ## 项目结构
 
 ```
-mingdao-collab-mcp/
+mdold/
 ├── .env.example          # 环境变量模板
 ├── .gitignore            # 排除密钥文件
 ├── pyproject.toml        # 项目配置
