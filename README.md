@@ -69,24 +69,22 @@ Token 会保存在 `.secrets.json` 中（已在 .gitignore 中排除）。
 
 ### 5. 在 Claude Code 中使用
 
-编辑 `~/.claude.json`，在 `mcpServers` 中添加：
+在项目目录下运行（将路径替换为你的实际目录，用 `pwd` 查看）：
 
-```json
-"mdc": {
-  "type": "stdio",
-  "command": "/absolute/path/to/mdold/.venv/bin/python3",
-  "args": ["-m", "mingdao_collab_mcp.server", "mingdao"],
-  "env": {
-    "MINGDAO_APP_KEY": "你的app_key",
-    "MINGDAO_APP_SECRET": "你的app_secret",
-    "MINGDAO_REDIRECT_URI": "http://localhost:8080/callback",
-    "MINGDAO_ACCESS_TOKEN": "",
-    "PYTHONPATH": "/absolute/path/to/mdold/src"
-  }
-}
+```bash
+claude mcp add mdold \
+  --scope user \
+  --transport stdio \
+  -e MINGDAO_APP_KEY=你的app_key \
+  -e MINGDAO_APP_SECRET=你的app_secret \
+  -e MINGDAO_REDIRECT_URI=http://localhost:8080/callback \
+  -e PYTHONPATH=/absolute/path/to/mdold/src \
+  -- /absolute/path/to/mdold/.venv/bin/python3 -m mingdao_collab_mcp.server mingdao
 ```
 
-> 将 `/absolute/path/to/mdold` 替换为你的实际目录（用 `pwd` 查看）。`MINGDAO_ACCESS_TOKEN` 留空即可，MCP Server 启动时会自动从 `.secrets.json` 读取并刷新。
+此命令会自动将配置写入 `~/.claude.json`（Claude Code 唯一读取的全局 MCP 配置文件）。
+
+> **注意：** 请勿手动编辑 `~/.claude/settings.json` 或创建 `~/.claude/mcp.json` 来添加 MCP，Claude Code 不会读取这些路径，会导致 MCP 始终不可见。
 
 重启 Claude Code，就可以直接用自然语言操作明道了：
 
